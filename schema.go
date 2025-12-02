@@ -176,12 +176,13 @@ type SchemaProps struct {
 	OneOf                []Schema         `json:"oneOf,omitempty"`
 	AnyOf                []Schema         `json:"anyOf,omitempty"`
 	Not                  *Schema          `json:"not,omitempty"`
-	Properties           SchemaProperties `json:"properties,omitempty"`
-	AdditionalProperties *SchemaOrBool    `json:"additionalProperties,omitempty"`
-	PatternProperties    SchemaProperties `json:"patternProperties,omitempty"`
+	Properties           SchemaProperties        `json:"properties,omitempty"`
+	AdditionalProperties *SchemaOrBool           `json:"additionalProperties,omitempty"`
+	PatternProperties    PatternSchemaProperties `json:"patternProperties,omitempty"`
 	Dependencies         Dependencies     `json:"dependencies,omitempty"`
 	AdditionalItems      *SchemaOrBool    `json:"additionalItems,omitempty"`
 	Definitions          Definitions      `json:"definitions,omitempty"`
+	Defs                 Definitions      `json:"$defs,omitempty"` // JSON Schema 2020-12
 }
 
 // SwaggerSchemaProps are additional properties supported by swagger schemas, but not JSON-schema (draft 4)

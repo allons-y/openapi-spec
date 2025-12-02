@@ -1,14 +1,15 @@
 {
-  "basePath": "/v1",
-  "consumes": [
-    "application/json"
-  ],
-  "host": "item.api.local",
+  "openapi": "3.0.0",
   "info": {
     "description": "Item API",
     "title": "Item API",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://item.api.local/v1"
+    }
+  ],
   "paths": {
     "/item": {
       "get": {
@@ -16,31 +17,30 @@
         "responses": {
           "200": {
             "description": "item detail response",
-            "schema": {
-              "$ref": "item.json"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "item.json"
+                }
+              }
             }
           }
         }
       }
     }
   },
-  "produces": [
-    "application/json"
-  ],
-  "schemes": [
-    "http"
-  ],
   "security": [
     {
       "key": []
     }
   ],
-  "securityDefinitions": {
-    "key": {
-      "in": "header",
-      "name": "x-item-token",
-      "type": "apiKey"
+  "components": {
+    "securitySchemes": {
+      "key": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-item-token"
+      }
     }
-  },
-  "swagger": "2.0"
+  }
 }

@@ -11,7 +11,7 @@ import (
 
 func TestDefaultResolutionCache(t *testing.T) {
 	jsonSchema := MustLoadJSONSchemaDraft04()
-	swaggerSchema := MustLoadSwagger20Schema()
+	openapi32Schema := MustLoadOpenAPI32Schema()
 
 	cache := defaultResolutionCache()
 
@@ -21,7 +21,15 @@ func TestDefaultResolutionCache(t *testing.T) {
 
 	sch, ok = cache.Get("http://swagger.io/v2/schema.json")
 	assert.True(t, ok)
-	assert.Equal(t, swaggerSchema, sch)
+	assert.Equal(t, openapi32Schema, sch)
+
+	sch, ok = cache.Get("https://spec.openapis.org/oas/3.2/schema/2025-09-17")
+	assert.True(t, ok)
+	assert.Equal(t, openapi32Schema, sch)
+
+	sch, ok = cache.Get("https://spec.openapis.org/oas/3.2/schema/2025-09-17#")
+	assert.True(t, ok)
+	assert.Equal(t, openapi32Schema, sch)
 
 	sch, ok = cache.Get("http://json-schema.org/draft-04/schema")
 	assert.True(t, ok)

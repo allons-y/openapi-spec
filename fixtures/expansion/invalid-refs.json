@@ -1,5 +1,5 @@
 {
-  "swagger": "2.0",
+  "openapi": "3.0.0",
   "info": {
     "version": "1.0.0",
     "title": "Swagger Petstore",
@@ -12,23 +12,29 @@
       "url": "http://creativecommons.org/licenses/by/4.0/"
     }
   },
-  "host": "petstore.swagger.wordnik.com",
-  "basePath": "/api",
-  "schemes": [
-    "http"
+  "servers": [
+    {
+      "url": "http://petstore.swagger.wordnik.com/api"
+    }
   ],
   "paths": {
     "/pets": {
       "get": {
-        "tags": [ "Pet Operations" ],
+        "tags": [
+          "Pet Operations"
+        ],
         "summary": "finds pets in the system",
         "responses": {
           "200": {
             "description": "pet response",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "NotCorrectRef"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "NotCorrectRef"
+                  }
+                }
               }
             },
             "headers": {
@@ -39,45 +45,51 @@
           },
           "default": {
             "description": "unexpected error",
-            "schema": {
-              "$ref": "NotCorrectRef"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "NotCorrectRef"
+                }
+              }
             }
           }
         }
       }
     }
   },
-  "definitions": {
-    "Pet": {
-      "required": [
-        "id",
-        "name"
-      ],
-      "properties": {
-        "id": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "name": {
-          "type": "string"
-        },
-        "tag": {
-          "type": "string"
+  "components": {
+    "schemas": {
+      "Pet": {
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          },
+          "tag": {
+            "type": "string"
+          }
         }
-      }
-    },
-    "Error": {
-      "required": [
-        "code",
-        "message"
-      ],
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
+      },
+      "Error": {
+        "required": [
+          "code",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string"
+          }
         }
       }
     }

@@ -1,26 +1,30 @@
 {
-  "swagger": "2.0",
+  "openapi": "3.0.0",
   "info": {
     "version": "2.1.0",
     "title": "Missing Item API"
   },
-  "host": "item.com",
-  "basePath": "/missing/ref",
-  "schemes": [
-    "http"
+  "servers": [
+    {
+      "url": "http://item.com/missing/ref"
+    }
   ],
   "paths": {
     "/employees": {
       "get": {
-        "operationId": "LIST-Employees",
         "summary": "List Employee Types",
+        "operationId": "LIST-Employees",
         "responses": {
           "200": {
             "description": "",
-            "schema": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/employees-output"
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/employees-output"
+                  }
+                }
               }
             }
           }

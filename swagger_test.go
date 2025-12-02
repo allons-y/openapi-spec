@@ -13,18 +13,84 @@ import (
 
 var spec = Swagger{
 	SwaggerProps: SwaggerProps{
-		ID:          "http://localhost:3849/api-docs",
-		Swagger:     "2.0",
-		Consumes:    []string{"application/json", "application/x-yaml"},
-		Produces:    []string{"application/json"},
-		Schemes:     []string{"http", "https"},
-		Info:        &testInfo,
-		Host:        "some.api.out.there",
-		BasePath:    "/",
-		Paths:       &paths,
-		Definitions: map[string]Schema{"Category": {SchemaProps: SchemaProps{Type: []string{"string"}}}},
+		ID:      "http://localhost:3849/api-docs",
+		OpenAPI: "3.0.0",
+		Info:    &testInfo,
+		Servers: []Server{
+			{
+				ServerProps: ServerProps{
+					URL: "http://some.api.out.there/",
+				},
+			},
+		},
+		Paths: &paths,
+		Components: &Components{
+			ComponentsProps: ComponentsProps{
+				Schemas: map[string]Schema{"Category": {SchemaProps: SchemaProps{Type: []string{"string"}}}},
+				Parameters: map[string]Parameter{
+					"categoryParam": {ParamProps: ParamProps{Name: "category", In: "query", Schema: &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}}},
+				},
+				Responses: map[string]Response{
+					"EmptyAnswer": {
+						ResponseProps: ResponseProps{
+							Description: "no data to return for this operation",
+						},
+					},
+				},
+				SecuritySchemes: map[string]SecurityScheme{
+					"internalApiKey": *APIKeyAuth("api_key", "header"),
+				},
+			},
+		},
+		Security: []map[string][]string{
+			{"internalApiKey": {}},
+		},
+		Tags:         []Tag{NewTag("pets", "", nil)},
+		ExternalDocs: &ExternalDocumentation{Description: "the name", URL: "the url"},
+	},
+	VendorExtensible: VendorExtensible{Extensions: map[string]any{
+		"x-some-extension": "vendor",
+		"x-schemes":        []any{"unix", "amqp"},
+	}},
+}
+
+// specWithSyncedFields is the expected result after deserialization
+// (deprecated Swagger 2.0 fields are synced from Components during UnmarshalJSON)
+var specWithSyncedFields = Swagger{
+	SwaggerProps: SwaggerProps{
+		ID:      "http://localhost:3849/api-docs",
+		OpenAPI: "3.0.0",
+		Info:    &testInfo,
+		Servers: []Server{
+			{
+				ServerProps: ServerProps{
+					URL: "http://some.api.out.there/",
+				},
+			},
+		},
+		Paths: &paths,
+		Components: &Components{
+			ComponentsProps: ComponentsProps{
+				Schemas: map[string]Schema{"Category": {SchemaProps: SchemaProps{Type: []string{"string"}}}},
+				Parameters: map[string]Parameter{
+					"categoryParam": {ParamProps: ParamProps{Name: "category", In: "query", Schema: &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}}},
+				},
+				Responses: map[string]Response{
+					"EmptyAnswer": {
+						ResponseProps: ResponseProps{
+							Description: "no data to return for this operation",
+						},
+					},
+				},
+				SecuritySchemes: map[string]SecurityScheme{
+					"internalApiKey": *APIKeyAuth("api_key", "header"),
+				},
+			},
+		},
+		// Deprecated Swagger 2.0 fields - synced from Components during deserialization
+		Definitions: Definitions{"Category": {SchemaProps: SchemaProps{Type: []string{"string"}}}},
 		Parameters: map[string]Parameter{
-			"categoryParam": {ParamProps: ParamProps{Name: "category", In: "query"}, SimpleSchema: SimpleSchema{Type: "string"}},
+			"categoryParam": {ParamProps: ParamProps{Name: "category", In: "query", Schema: &Schema{SchemaProps: SchemaProps{Type: []string{"string"}}}}},
 		},
 		Responses: map[string]Response{
 			"EmptyAnswer": {
@@ -33,7 +99,7 @@ var spec = Swagger{
 				},
 			},
 		},
-		SecurityDefinitions: map[string]*SecurityScheme{
+		SecurityDefinitions: SecurityDefinitions{
 			"internalApiKey": APIKeyAuth("api_key", "header"),
 		},
 		Security: []map[string][]string{
@@ -50,17 +116,13 @@ var spec = Swagger{
 
 const specJSON = `{
 	"id": "http://localhost:3849/api-docs",
-	"consumes": ["application/json", "application/x-yaml"],
-	"produces": ["application/json"],
-	"schemes": ["http", "https"],
-	"swagger": "2.0",
+	"openapi": "3.0.0",
 	"info": {
 		"contact": {
 			"name": "wordnik api team",
 			"url": "http://developer.wordnik.com"
 		},
-		"description": "A sample API that uses a petstore as an example to demonstrate features in the swagger-2.0` +
-	` specification",
+		"description": "A sample API that uses a petstore as an example to demonstrate features in the OpenAPI 3.0 specification",
 		"license": {
 			"name": "Creative Commons 4.0 International",
 			"url": "http://creativecommons.org/licenses/by/4.0/"
@@ -70,23 +132,30 @@ const specJSON = `{
 		"version": "1.0.9-abcd",
 		"x-framework": "go-swagger"
 	},
-	"host": "some.api.out.there",
-	"basePath": "/",
-	"paths": {"x-framework":"go-swagger","/":{"$ref":"cats"}},
-	"definitions": { "Category": { "type": "string"} },
-	"parameters": {
-		"categoryParam": {
-			"name": "category",
-			"in": "query",
-			"type": "string"
+	"servers": [
+		{
+			"url": "http://some.api.out.there/"
 		}
-	},
-	"responses": { "EmptyAnswer": { "description": "no data to return for this operation" } },
-	"securityDefinitions": {
-		"internalApiKey": {
-			"type": "apiKey",
-			"in": "header",
-			"name": "api_key"
+	],
+	"paths": {"x-framework":"go-swagger","/":{"$ref":"cats"}},
+	"components": {
+		"schemas": { "Category": { "type": "string"} },
+		"parameters": {
+			"categoryParam": {
+				"name": "category",
+				"in": "query",
+				"schema": {
+					"type": "string"
+				}
+			}
+		},
+		"responses": { "EmptyAnswer": { "description": "no data to return for this operation" } },
+		"securitySchemes": {
+			"internalApiKey": {
+				"type": "apiKey",
+				"in": "header",
+				"name": "api_key"
+			}
 		}
 	},
 	"security": [{"internalApiKey":[]}],
@@ -196,7 +265,7 @@ const specJSON = `{
 */
 
 func assertSpecs(t testing.TB, actual, expected Swagger) bool {
-	expected.Swagger = "2.0"
+	expected.OpenAPI = "3.0.0"
 	return assert.Equal(t, expected, actual)
 }
 
@@ -238,7 +307,8 @@ func TestSwaggerSpec_Serialize(t *testing.T) {
 func TestSwaggerSpec_Deserialize(t *testing.T) {
 	var actual Swagger
 	require.NoError(t, json.Unmarshal([]byte(specJSON), &actual))
-	assert.Equal(t, actual, spec)
+	// Deserialization syncs deprecated Swagger 2.0 fields from Components
+	assert.Equal(t, actual, specWithSyncedFields)
 }
 
 func TestVendorExtensionStringSlice(t *testing.T) {

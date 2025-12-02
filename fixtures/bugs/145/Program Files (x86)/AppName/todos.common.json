@@ -1,10 +1,9 @@
 {
-  "swagger": "2.0",
+  "openapi": "3.0.0",
   "info": {
     "version": "1.0",
     "title": "To-do Demo",
-    "description":
-      "### Notes:\n\nThis OAS2 (Swagger 2) specification defines common models and responses, that other specifications may reference.\n\nFor example, check out the user poperty in the main.oas2 todo-partial model - it references the user model in this specification!\n\nLikewise, the main.oas2 operations reference the shared error responses in this common specification.",
+    "description": "### Notes:\n\nThis OAS2 (Swagger 2) specification defines common models and responses, that other specifications may reference.\n\nFor example, check out the user poperty in the main.oas2 todo-partial model - it references the user model in this specification!\n\nLikewise, the main.oas2 operations reference the shared error responses in this common specification.",
     "contact": {
       "name": "Stoplight",
       "url": "https://stoplight.io"
@@ -13,91 +12,127 @@
       "name": "MIT"
     }
   },
-  "host": "example.com",
-  "securityDefinitions": {},
+  "servers": [
+    {
+      "url": "https://example.com"
+    }
+  ],
   "paths": {},
-  "responses": {
-    "401": {
-      "description": "",
-      "schema": {
-        "$ref": "#/definitions/error-response"
-      },
-      "examples": {
-        "application/json": {
-          "status": "401",
-          "error": "Not Authorized"
-        }
-      }
-    },
-    "403": {
-      "description": "",
-      "schema": {
-        "$ref": "#/definitions/error-response"
-      },
-      "examples": {
-        "application/json": {
-          "status": "403",
-          "error": "Forbbiden"
-        }
-      }
-    },
-    "404": {
-      "description": "",
-      "schema": {
-        "$ref": "#/definitions/error-response"
-      },
-      "examples": {
-        "application/json": {
-          "status": "404",
-          "error": "Not Found"
-        }
-      }
-    },
-    "500": {
-      "description": "",
-      "schema": {
-        "$ref": "#/definitions/error-response"
-      },
-      "examples": {
-        "application/json": {
-          "status": "500",
-          "error": "Server Error"
-        }
-      }
-    }
-  },
-  "definitions": {
-    "user": {
-      "title": "User",
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The user's full name."
+  "components": {
+    "schemas": {
+      "user": {
+        "title": "User",
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The user's full name."
+          },
+          "age": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 150
+          },
+          "error": {
+            "$ref": "#/components/schemas/error-response"
+          }
         },
-        "age": {
-          "type": "number",
-          "minimum": 0,
-          "maximum": 150
-        },
-        "error": {
-          "$ref": "#/definitions/error-response"
-        }
+        "required": [
+          "name",
+          "age"
+        ]
       },
-      "required": ["name", "age"]
+      "error-response": {
+        "type": "object",
+        "title": "Error Response",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "error"
+        ]
+      }
     },
-    "error-response": {
-      "type": "object",
-      "title": "Error Response",
-      "properties": {
-        "status": {
-          "type": "string"
-        },
-        "error": {
-          "type": "string"
+    "responses": {
+      "401": {
+        "description": "",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error-response"
+            },
+            "examples": {
+              "example": {
+                "value": {
+                  "status": "401",
+                  "error": "Not Authorized"
+                }
+              }
+            }
+          }
         }
       },
-      "required": ["status", "error"]
-    }
+      "403": {
+        "description": "",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error-response"
+            },
+            "examples": {
+              "example": {
+                "value": {
+                  "status": "403",
+                  "error": "Forbbiden"
+                }
+              }
+            }
+          }
+        }
+      },
+      "404": {
+        "description": "",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error-response"
+            },
+            "examples": {
+              "example": {
+                "value": {
+                  "status": "404",
+                  "error": "Not Found"
+                }
+              }
+            }
+          }
+        }
+      },
+      "500": {
+        "description": "",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/error-response"
+            },
+            "examples": {
+              "example": {
+                "value": {
+                  "status": "500",
+                  "error": "Server Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {}
   }
 }

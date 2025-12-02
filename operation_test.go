@@ -21,9 +21,6 @@ var operation = Operation{
 	},
 	OperationProps: OperationProps{
 		Description: "operation description",
-		Consumes:    []string{"application/json", "application/x-yaml"},
-		Produces:    []string{"application/json", "application/x-yaml"},
-		Schemes:     []string{"http", "https"},
 		Tags:        []string{"dogs"},
 		Summary:     "the summary of the operation",
 		ID:          "sendCat",
@@ -51,9 +48,6 @@ var operation = Operation{
 const operationJSON = `{
 	"description": "operation description",
 	"x-framework": "go-swagger",
-	"consumes": [ "application/json", "application/x-yaml" ],
-	"produces": [ "application/json", "application/x-yaml" ],
-	"schemes": ["http", "https"],
 	"tags": ["dogs"],
 	"summary": "the summary of the operation",
 	"operationId": "sendCat",
@@ -153,12 +147,6 @@ func TestOperationBuilder(t *testing.T) {
            ]
           }
          ],
-         "consumes": [
-          "application/json"
-         ],
-         "produces": [
-          "application/json"
-         ],
          "tags": [
           "this",
           "that"
@@ -225,12 +213,6 @@ func TestOperationBuilder(t *testing.T) {
           }
          ],
          "description": "test operation",
-         "consumes": [
-          "application/json"
-         ],
-         "produces": [
-          "application/json"
-         ],
          "tags": [
           "this",
           "that"
@@ -280,9 +262,6 @@ func TestOperationGobEncoding(t *testing.T) {
 	doTestOperationGobEncoding(t, `{
 			"description": "operation description",
 			"x-framework": "go-swagger",
-			"consumes": [ "application/json", "application/x-yaml" ],
-			"produces": [ "application/json", "application/x-yaml" ],
-			"schemes": ["http", "https"],
 			"tags": ["dogs"],
 			"summary": "the summary of the operation",
 			"operationId": "sendCat",
@@ -299,9 +278,6 @@ func TestOperationGobEncoding(t *testing.T) {
 	doTestOperationGobEncoding(t, `{
 			"description": "operation description",
 			"x-framework": "go-swagger",
-			"consumes": [ "application/json", "application/x-yaml" ],
-			"produces": [ "application/json", "application/x-yaml" ],
-			"schemes": ["http", "https"],
 			"tags": ["dogs"],
 			"security": [],
 			"summary": "the summary of the operation",
@@ -319,9 +295,6 @@ func TestOperationGobEncoding(t *testing.T) {
 	doTestOperationGobEncoding(t, `{
 			"description": "operation description",
 			"x-framework": "go-swagger",
-			"consumes": [ "application/json", "application/x-yaml" ],
-			"produces": [ "application/json", "application/x-yaml" ],
-			"schemes": ["http", "https"],
 			"tags": ["dogs"],
 			"summary": "the summary of the operation",
 			"security": [ { "scoped-auth": [ "phone", "email" ] , "api-key": []} ],

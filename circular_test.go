@@ -21,7 +21,7 @@ func TestExpandCircular_Issue3(t *testing.T) {
 	require.NotEmpty(t, jazon)
 
 	// circular $ref point to the expanded root document
-	assertRefInJSON(t, jazon, "#/definitions")
+	assertRefInJSON(t, jazon, "#/components/schemas")
 
 	// verify that all $ref can resolved against the new root schema
 	assertRefResolve(t, jazon, "", root)
@@ -36,14 +36,33 @@ func TestExpandCircular_RefExpansion(t *testing.T) {
 	carsDoc, err := jsonDoc(basePath)
 	require.NoError(t, err)
 
-	spec := new(Swagger)
-	require.NoError(t, json.Unmarshal(carsDoc, spec))
+	// Parse as partial fixture first
+	var partialSpec struct {
+		Definitions map[string]Schema `json:"definitions"`
+	}
+	require.NoError(t, json.Unmarshal(carsDoc, &partialSpec))
+
+	// Create a wrapper spec that makes the partial fixture resolvable
+	spec := &Swagger{
+		SwaggerProps: SwaggerProps{
+			OpenAPI: "3.0.0",
+		},
+	}
+
+	// Load the definitions into a temporary structure for resolution
+	// The JSONLookup backward compatibility will handle #/definitions/ references
+	spec.Components = &Components{
+		ComponentsProps: ComponentsProps{
+			Schemas: partialSpec.Definitions,
+		},
+	}
 
 	resolver := defaultSchemaLoader(spec, &ExpandOptions{RelativeBase: basePath}, nil, nil)
 
-	schema := spec.Definitions["car"]
+	schema := partialSpec.Definitions["car"]
+	refPath := "#/definitions/car"
 
-	_, err = expandSchema(schema, []string{"#/definitions/car"}, resolver, normalizeBase(basePath))
+	_, err = expandSchema(schema, []string{refPath}, resolver, normalizeBase(basePath))
 	require.NoError(t, err)
 
 	jazon := asJSON(t, schema)
@@ -67,7 +86,7 @@ func TestExpandCircular_Spec2Expansion(t *testing.T) {
 	require.NotEmpty(t, jazon)
 
 	// circular $ref are not always the same, but they sure are one of the nodes
-	assertRefInJSONRegexp(t, jazon, `#/definitions/node\d+`)
+	assertRefInJSONRegexp(t, jazon, `#/components/schemas/node\d+`)
 
 	// circular $ref always resolve against the root
 	assertRefResolve(t, jazon, "", root)
@@ -81,7 +100,7 @@ func TestExpandCircular_Spec2Expansion(t *testing.T) {
 	require.NotEmpty(t, jazon)
 
 	// circular $ref resolved against the expanded root document
-	assertRefInJSON(t, jazon, `#/definitions/`)
+	assertRefInJSON(t, jazon, `#/components/schemas/`)
 
 	// circular $ref always resolve against the root
 	assertRefResolve(t, jazon, "", root)
@@ -155,7 +174,7 @@ func TestExpandCircular_Issue957(t *testing.T) {
 	require.NotContainsf(t, jazon, "fixture-957.json#/",
 		"expected %s to be expanded with stripped circular $ref", fixturePath)
 
-	assertRefInJSON(t, jazon, "#/definitions/")
+	assertRefInJSON(t, jazon, "#/components/schemas/")
 
 	assertRefResolve(t, jazon, "", root)
 
@@ -169,7 +188,7 @@ func TestExpandCircular_Bitbucket(t *testing.T) {
 	jazon, root := expandThisOrDieTrying(t, fixturePath)
 	require.NotEmpty(t, jazon)
 
-	assertRefInJSON(t, jazon, "#/definitions/")
+	assertRefInJSON(t, jazon, "#/components/schemas/")
 
 	assertRefResolve(t, jazon, "", root)
 
@@ -194,19 +213,19 @@ func TestExpandCircular_ResponseWithRoot(t *testing.T) {
 	require.NoError(t, ExpandResponseWithRoot(&resp, rootDoc, thisCache))
 
 	jazon := asJSON(t, resp)
-	assertRefInJSON(t, jazon, "#/definitions/MyObj")
+	assertRefInJSON(t, jazon, "#/components/schemas/MyObj")
 
 	// do it again
 	require.NoError(t, ExpandResponseWithRoot(&resp, rootDoc, thisCache))
 	jazon = asJSON(t, resp)
-	assertRefInJSON(t, jazon, "#/definitions/MyObj")
+	assertRefInJSON(t, jazon, "#/components/schemas/MyObj")
 }
 
 func TestExpandCircular_Issue415(t *testing.T) {
 	jazon, root := expandThisOrDieTrying(t, filepath.Join("fixtures", "expansion", "clickmeter.json"))
 	require.NotEmpty(t, jazon)
 
-	assertRefInJSON(t, jazon, "#/definitions/")
+	assertRefInJSON(t, jazon, "#/components/schemas/")
 	assertRefResolve(t, jazon, "", root)
 	assertRefExpand(t, jazon, "", root)
 }
@@ -215,7 +234,7 @@ func TestExpandCircular_SpecExpansion(t *testing.T) {
 	jazon, root := expandThisOrDieTrying(t, filepath.Join("fixtures", "expansion", "circularSpec.json"))
 	require.NotEmpty(t, jazon)
 
-	assertRefInJSON(t, jazon, "#/definitions/Book")
+	assertRefInJSON(t, jazon, "#/components/schemas/Book")
 	assertRefResolve(t, jazon, "", root)
 	assertRefExpand(t, jazon, "", root)
 }
@@ -266,7 +285,7 @@ func TestCircular_RemoteExpandAzure(t *testing.T) {
 	require.NotNil(t, pth1)
 
 	// check expected remaining $ref
-	assertRefInJSONRegexp(t, jazon, `^(#/definitions/)|(networkInterface.json#/definitions/)|(networkSecurityGroup.json#/definitions/)|(network.json#/definitions)|(virtualNetworkTap.json#/definitions/)|(virtualNetwork.json#/definitions/)|(privateEndpoint.json#/definitions/)|(\./examples/)`)
+	assertRefInJSONRegexp(t, jazon, `^(#/components/schemas/)|(networkInterface.json#/components/schemas/)|(networkSecurityGroup.json#/components/schemas/)|(network.json#/components/schemas/)|(virtualNetworkTap.json#/components/schemas/)|(virtualNetwork.json#/components/schemas/)|(privateEndpoint.json#/components/schemas/)|(\./examples/)`)
 
 	// check all $ref resolve in the expanded root
 	// (filter out the remaining $ref in x-ms-example extensions, which are not expanded)

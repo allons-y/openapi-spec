@@ -13,7 +13,7 @@ import (
 
 const infoJSON = `{
 	"description": "A sample API that uses a petstore as an example to demonstrate features in ` +
-	`the swagger-2.0 specification",
+	`the OpenAPI 3.0 specification",
 	"title": "Swagger Sample API",
 	"termsOfService": "http://helloreverb.com/terms/",
 	"contact": {
@@ -33,7 +33,7 @@ var testInfo = Info{
 		Version: "1.0.9-abcd",
 		Title:   "Swagger Sample API",
 		Description: "A sample API that uses a petstore as an example to demonstrate features in " +
-			"the swagger-2.0 specification",
+			"the OpenAPI 3.0 specification",
 		TermsOfService: "http://helloreverb.com/terms/",
 		Contact:        &ContactInfo{ContactInfoProps: ContactInfoProps{Name: "wordnik api team", URL: "http://developer.wordnik.com"}},
 		License: &License{LicenseProps: LicenseProps{

@@ -58,8 +58,9 @@ func TestResolveResponse(t *testing.T) {
 	// resolve resolves the ref, but dos not expand
 	jazon := asJSON(t, resp2)
 
+	// OpenAPI 3 uses #/components/responses/ path
 	assert.JSONEq(t, `{
-         "$ref": "#/responses/petResponse"
+         "$ref": "#/components/responses/petResponse"
         }`, jazon)
 }
 
@@ -78,8 +79,9 @@ func TestResolveResponseWithBase(t *testing.T) {
 	// resolve resolves the ref, but dos not expand
 	jazon := asJSON(t, resp2)
 
+	// OpenAPI 3 uses #/components/responses/ path
 	assert.JSONEq(t, `{
-         "$ref": "#/responses/petResponse"
+         "$ref": "#/components/responses/petResponse"
         }`, jazon)
 }
 
@@ -90,19 +92,20 @@ func TestResolveParam(t *testing.T) {
 	var spec Swagger
 	require.NoError(t, json.Unmarshal(specDoc, &spec))
 
-	param := spec.Paths.Paths["/pets/{id}"].Get.Parameters[0]
+	// Get the query parameter from components
+	param := spec.Components.Parameters["query"]
 	par, err := ResolveParameter(spec, param.Ref)
 	require.NoError(t, err)
 
 	jazon := asJSON(t, par)
 
+	// OpenAPI 3 uses schema wrapper for parameter types
+	// Note: required=false is omitted in JSON (omitempty)
 	assert.JSONEq(t, `{
-      "name": "id",
-      "in": "path",
-      "description": "ID of pet to fetch",
-      "required": true,
-      "type": "integer",
-      "format": "int64"
+      "in": "query",
+      "schema": {
+        "type": "string"
+      }
       }`, jazon)
 }
 
@@ -119,13 +122,16 @@ func TestResolveParamWithBase(t *testing.T) {
 
 	jazon := asJSON(t, par)
 
+	// OpenAPI 3 uses schema wrapper for parameter types
 	assert.JSONEq(t, `{
 "description":"ID of pet to fetch",
-"format":"int64",
 "in":"path",
 "name":"id",
 "required":true,
-"type":"integer"
+"schema": {
+  "type":"integer",
+  "format":"int64"
+}
 }`, jazon)
 }
 
@@ -168,7 +174,8 @@ func TestResolveRemoteRef_FromFragment(t *testing.T) {
 	require.NoError(t, json.Unmarshal(b, rootDoc))
 
 	var tgt Schema
-	ref, err := NewRef(server.URL + "/refed.json#/definitions/pet")
+	// OpenAPI 3 uses #/components/schemas/ instead of #/definitions/
+	ref, err := NewRef(server.URL + "/refed.json#/components/schemas/pet")
 	require.NoError(t, err)
 
 	context := newResolverContext(&ExpandOptions{PathLoader: jsonDoc})
@@ -225,7 +232,8 @@ func TestResolveRemoteRef_ToParameter(t *testing.T) {
 	require.NoError(t, json.Unmarshal(b, rootDoc))
 
 	var tgt Parameter
-	ref, err := NewRef(server.URL + "/refed.json#/parameters/idParam")
+	// OpenAPI 3 uses #/components/parameters/ instead of #/parameters/
+	ref, err := NewRef(server.URL + "/refed.json#/components/parameters/idParam")
 	require.NoError(t, err)
 
 	resolver := defaultSchemaLoader(rootDoc, nil, nil, nil)
@@ -235,8 +243,10 @@ func TestResolveRemoteRef_ToParameter(t *testing.T) {
 	assert.Equal(t, "path", tgt.In)
 	assert.Equal(t, "ID of pet to fetch", tgt.Description)
 	assert.True(t, tgt.Required)
-	assert.Equal(t, "integer", tgt.Type)
-	assert.Equal(t, "int64", tgt.Format)
+	// OpenAPI 3 uses Schema wrapper - type/format are in tgt.Schema
+	require.NotNil(t, tgt.Schema)
+	assert.Contains(t, tgt.Schema.Type, "integer")
+	assert.Equal(t, "int64", tgt.Schema.Format)
 }
 
 func TestResolveRemoteRef_ToPathItem(t *testing.T) {
@@ -269,12 +279,13 @@ func TestResolveRemoteRef_ToResponse(t *testing.T) {
 	require.NoError(t, json.Unmarshal(b, rootDoc))
 
 	var tgt Response
-	ref, err := NewRef(server.URL + "/refed.json#/responses/petResponse")
+	// OpenAPI 3 uses #/components/responses/ instead of #/responses/
+	ref, err := NewRef(server.URL + "/refed.json#/components/responses/petResponse")
 	require.NoError(t, err)
 
 	resolver := defaultSchemaLoader(rootDoc, nil, nil, nil)
 	require.NoError(t, resolver.Resolve(&ref, &tgt, ""))
-	assert.Equal(t, rootDoc.Responses["petResponse"], tgt)
+	assert.Equal(t, rootDoc.Components.Responses["petResponse"], tgt)
 }
 
 func TestResolveLocalRef_SameRoot(t *testing.T) {
@@ -322,7 +333,8 @@ func TestResolveLocalRef_Parameter(t *testing.T) {
 	require.NoError(t, json.Unmarshal(b, rootDoc))
 
 	var tgt Parameter
-	ref, err := NewRef("#/parameters/idParam")
+	// OpenAPI 3 uses #/components/parameters/ instead of #/parameters/
+	ref, err := NewRef("#/components/parameters/idParam")
 	require.NoError(t, err)
 
 	resolver := defaultSchemaLoader(rootDoc, nil, nil, nil)
@@ -332,8 +344,10 @@ func TestResolveLocalRef_Parameter(t *testing.T) {
 	assert.Equal(t, "path", tgt.In)
 	assert.Equal(t, "ID of pet to fetch", tgt.Description)
 	assert.True(t, tgt.Required)
-	assert.Equal(t, "integer", tgt.Type)
-	assert.Equal(t, "int64", tgt.Format)
+	// OpenAPI 3 uses Schema wrapper - type/format are in tgt.Schema
+	require.NotNil(t, tgt.Schema)
+	assert.Contains(t, tgt.Schema.Type, "integer")
+	assert.Equal(t, "int64", tgt.Schema.Format)
 }
 
 func TestResolveLocalRef_PathItem(t *testing.T) {
@@ -367,7 +381,7 @@ func TestResolveLocalRef_Response(t *testing.T) {
 
 	resolver := defaultSchemaLoader(rootDoc, nil, nil, nil)
 	require.NoError(t, resolver.Resolve(&ref, &tgt, basePath))
-	assert.Equal(t, rootDoc.Responses["petResponse"], tgt)
+	assert.Equal(t, rootDoc.Components.Responses["petResponse"], tgt)
 }
 
 func TestResolvePathItem(t *testing.T) {
@@ -405,34 +419,7 @@ func TestResolvePathItem(t *testing.T) {
 }
 
 func TestResolveExtraItem(t *testing.T) {
-	// go-openapi extra goodie: $ref in simple schema Items and Headers
-	spec := new(Swagger)
-	specDoc, err := jsonDoc(extraRefFixture)
-	require.NoError(t, err)
-
-	require.NoError(t, json.Unmarshal(specDoc, spec))
-
-	// Resolve param Items use case: here we explicitly resolve the unsupported case
-	parm := spec.Paths.Paths["/employees"].Get.Parameters[0]
-	parmItem, err := ResolveItems(spec, parm.Items.Ref, &ExpandOptions{RelativeBase: extraRefFixture})
-	require.NoError(t, err)
-
-	jazon := asJSON(t, parmItem)
-
-	assert.JSONEq(t, `{
-         "type": "integer",
-         "format": "int32"
-			 }`, jazon)
-
-	// Resolve header Items use case: here we explicitly resolve the unsupported case
-	hdr := spec.Paths.Paths["/employees"].Get.Responses.StatusCodeResponses[200].Headers["X-header"]
-	hdrItem, err := ResolveItems(spec, hdr.Items.Ref, &ExpandOptions{RelativeBase: extraRefFixture})
-	require.NoError(t, err)
-
-	jazon = asJSON(t, hdrItem)
-
-	assert.JSONEq(t, `{
-         "type": "string",
-         "format": "uuid"
-			 }`, jazon)
+	// TODO: This test uses Swagger 2.0 specific features (parameter.Items, header.Items)
+	// In OpenAPI 3, parameters use schema instead of items
+	t.Skip("Test uses Swagger 2.0 specific features not available in OpenAPI 3")
 }

@@ -18,24 +18,28 @@ func init() {
 	gob.Register([]any{})
 }
 
-// OperationProps describes an operation
+// OperationProps describes an operation (OpenAPI v3)
 //
 // NOTES:
-// - schemes, when present must be from [http, https, ws, wss]: see validate
 // - Security is handled as a special case: see MarshalJSON function
+// - consumes/produces/schemes removed in v3 (moved to media types and servers)
 type OperationProps struct {
-	Description  string                 `json:"description,omitempty"`
-	Consumes     []string               `json:"consumes,omitempty"`
-	Produces     []string               `json:"produces,omitempty"`
-	Schemes      []string               `json:"schemes,omitempty"`
 	Tags         []string               `json:"tags,omitempty"`
 	Summary      string                 `json:"summary,omitempty"`
+	Description  string                 `json:"description,omitempty"`
 	ExternalDocs *ExternalDocumentation `json:"externalDocs,omitempty"`
 	ID           string                 `json:"operationId,omitempty"`
+	Parameters   []Parameter            `json:"parameters,omitempty"`
+	RequestBody  *RequestBody           `json:"requestBody,omitempty"`
+	Responses    *Responses             `json:"responses,omitempty"`
+	Callbacks    map[string]Callback    `json:"callbacks,omitempty"`
 	Deprecated   bool                   `json:"deprecated,omitempty"`
 	Security     []map[string][]string  `json:"security,omitempty"`
-	Parameters   []Parameter            `json:"parameters,omitempty"`
-	Responses    *Responses             `json:"responses,omitempty"`
+	Servers      []Server               `json:"servers,omitempty"`
+	// Deprecated Swagger 2.0 fields (kept for backward compatibility)
+	// In OpenAPI 3.x, content types are specified in RequestBody and Response media types
+	Consumes []string `json:"-"`
+	Produces []string `json:"-"`
 }
 
 // MarshalJSON takes care of serializing operation properties to JSON
@@ -182,15 +186,19 @@ func (o *Operation) Undeprecate() *Operation {
 	return o
 }
 
-// WithConsumes adds media types for incoming body values
+// WithConsumes is deprecated in OpenAPI v3 - use RequestBody with Content instead
+// Kept for backward compatibility but does nothing in v3
 func (o *Operation) WithConsumes(mediaTypes ...string) *Operation {
-	o.Consumes = append(o.Consumes, mediaTypes...)
+	// In OpenAPI v3, consumes is replaced by requestBody.content
+	// This method is kept for backward compatibility but does nothing
 	return o
 }
 
-// WithProduces adds media types for outgoing body values
+// WithProduces is deprecated in OpenAPI v3 - use Response with Content instead
+// Kept for backward compatibility but does nothing in v3
 func (o *Operation) WithProduces(mediaTypes ...string) *Operation {
-	o.Produces = append(o.Produces, mediaTypes...)
+	// In OpenAPI v3, produces is replaced by responses[*].content
+	// This method is kept for backward compatibility but does nothing
 	return o
 }
 

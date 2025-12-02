@@ -10,17 +10,21 @@ import (
 	"github.com/go-openapi/swag/jsonutils"
 )
 
-// ResponseProps properties specific to a response
+// ResponseProps properties specific to a response (OpenAPI v3)
 type ResponseProps struct {
-	Description string            `json:"description"`
-	Schema      *Schema           `json:"schema,omitempty"`
-	Headers     map[string]Header `json:"headers,omitempty"`
-	Examples    map[string]any    `json:"examples,omitempty"`
+	Description string                `json:"description"`
+	Headers     map[string]Header     `json:"headers,omitempty"`
+	Content     map[string]MediaType  `json:"content,omitempty"`
+	Links       map[string]Link       `json:"links,omitempty"`
+	// Schema is deprecated in OpenAPI v3, use Content instead
+	Schema      *Schema               `json:"schema,omitempty"`
+	// Examples changed structure in v3, kept for backward compatibility
+	Examples    map[string]any        `json:"examples,omitempty"`
 }
 
 // Response describes a single response from an API Operation.
 //
-// For more information: http://goo.gl/8us55a#responseObject
+// For more information: https://spec.openapis.org/oas/v3.1.0#response-object
 type Response struct {
 	Refable
 	ResponseProps

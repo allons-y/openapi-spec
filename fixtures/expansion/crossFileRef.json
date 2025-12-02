@@ -4,7 +4,7 @@
       "get": {
         "parameters": [
           {
-            "$ref": "./all-the-things.json#/parameters/idParam"
+            "$ref": "./all-the-things.json#/components/parameters/idParam"
           }
         ]
       }
@@ -13,7 +13,7 @@
       "get": {
         "responses": {
           "200": {
-            "$ref": "./all-the-things.json#/responses/anotherPet"
+            "$ref": "./all-the-things.json#/components/responses/anotherPet"
           }
         }
       }
