@@ -20,11 +20,14 @@ type Encoding struct {
 
 // EncodingProps describes the properties of an Encoding
 type EncodingProps struct {
-	ContentType   string              `json:"contentType,omitempty"`
-	Headers       map[string]Header   `json:"headers,omitempty"`
-	Style         string              `json:"style,omitempty"`
-	Explode       *bool               `json:"explode,omitempty"`
-	AllowReserved bool                `json:"allowReserved,omitempty"`
+	ContentType    string              `json:"contentType,omitempty"`
+	Headers        map[string]Header   `json:"headers,omitempty"`
+	Style          string              `json:"style,omitempty"`
+	Explode        *bool               `json:"explode,omitempty"`
+	AllowReserved  bool                `json:"allowReserved,omitempty"`
+	Encoding       map[string]Encoding `json:"encoding,omitempty"`       // OpenAPI 3.2: nested encoding for complex types
+	PrefixEncoding []Encoding          `json:"prefixEncoding,omitempty"` // OpenAPI 3.2: encoding for sequential media type prefixes
+	ItemEncoding   *Encoding           `json:"itemEncoding,omitempty"`   // OpenAPI 3.2: encoding for each item in a stream
 }
 
 // JSONLookup look up a value by the json property name
@@ -67,10 +70,13 @@ type MediaType struct {
 
 // MediaTypeProps describes the properties of a MediaType
 type MediaTypeProps struct {
-	Schema   *Schema             `json:"schema,omitempty"`
-	Example  any                 `json:"example,omitempty"`
-	Examples map[string]Example  `json:"examples,omitempty"`
-	Encoding map[string]Encoding `json:"encoding,omitempty"`
+	Schema         *Schema             `json:"schema,omitempty"`
+	ItemSchema     *Schema             `json:"itemSchema,omitempty"`     // OpenAPI 3.2: schema for each item in a stream
+	Example        any                 `json:"example,omitempty"`
+	Examples       map[string]Example  `json:"examples,omitempty"`
+	Encoding       map[string]Encoding `json:"encoding,omitempty"`
+	PrefixEncoding []Encoding          `json:"prefixEncoding,omitempty"` // OpenAPI 3.2: encoding for sequential media type prefixes
+	ItemEncoding   *Encoding           `json:"itemEncoding,omitempty"`   // OpenAPI 3.2: encoding for each item in a stream
 }
 
 // JSONLookup look up a value by the json property name
